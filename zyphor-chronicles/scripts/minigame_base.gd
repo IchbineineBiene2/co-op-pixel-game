@@ -26,10 +26,3 @@ func _on_start() -> void:
 
 func _on_end() -> void:
 	pass
-
-func _process(delta: float) -> void:
-	if not is_running:
-		return
-	time_left -= delta
-	if time_left <= 0:
-		end()

@@ -11,6 +11,7 @@ const PLAYER_SPEED_HARD = 84.0
 var player: CharacterBody2D = null
 var finish_line_y: float = 20.0
 var rank: int = 1
+var timer_label: Label = null
 
 func _on_start() -> void:
 	match difficulty:
@@ -18,6 +19,8 @@ func _on_start() -> void:
 		"medium": time_left = 75.0
 		"hard":   time_left = 60.0
 	_create_race_scene()
+	var hud = preload("res://scenes/ui/hud.tscn").instantiate()
+	add_child(hud)
 
 func _create_race_scene() -> void:
 	# Zemin
@@ -119,7 +122,7 @@ func _player_finished() -> void:
 	rank += 1
 	is_running = false
 	print("Bitirdi! Sıra: ", rank - 1)
-	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
+	get_tree().change_scene_to_file("res://scenes/ui/results.tscn")
 
 func _zkr_for_rank(r: int) -> int:
 	match r:
@@ -134,3 +137,20 @@ func _medals_for_rank(r: int) -> int:
 		2: return 2
 		3: return 1
 		_: return 0
+
+func _process(delta: float) -> void:
+	if not is_running:
+		return
+	time_left -= delta
+	if timer_label:
+		timer_label.text = "Time: " + str(int(max(time_left, 0)))
+	if time_left <= 0:
+		is_running = false
+		_finish_game()
+
+func _finish_game() -> void:
+	var zkr = 20
+	var medals = 0
+	PlayerData.add_zkr(zkr)
+	PlayerData.add_medals(medals)
+	get_tree().change_scene_to_file.call_deferred("res://scenes/ui/results.tscn")
