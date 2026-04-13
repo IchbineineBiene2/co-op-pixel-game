@@ -1,0 +1,17 @@
+keys,tr,en
+GAME_TITLE,ZYPHOR CHRONICLES,ZYPHOR CHRONICLES
+BTN_HOST,Oyun Kur,Host Game
+BTN_JOIN,Oyuna Katıl,Join Game
+BTN_QUIT,Çıkış,Quit
+BTN_READY,Hazır,Ready
+BTN_BACK,Geri,Back
+BTN_START,Başlat,Start
+LBL_IP,IP Adresi,IP Address
+LBL_PLAYERS,Oyuncular,Players
+LBL_ROUND,Tur,Round
+LBL_ZKR,Kredi,Credits
+LBL_MEDALS,Madalyon,Medals
+MSG_WAITING,Oyuncular bekleniyor...,Waiting for players...
+MSG_ROUND_START,Tur başlıyor!,Round starting!
+MSG_YOU_WIN,Kazandın!,You Win!
+MSG_GAME_OVER,Oyun Bitti,Game Over

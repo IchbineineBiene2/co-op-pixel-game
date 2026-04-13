@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://befxr63stcs7r"]
+
+[ext_resource type="Script" uid="uid://c5erhe5n0fk3w" path="res://scenes/main_menu.gd" id="1_sl1te"]
+
+[node name="MainMenu" type="Node2D" unique_id=1457673660]
+script = ExtResource("1_sl1te")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1782896586]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer" unique_id=1227777658]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer" unique_id=1725071439]
+layout_mode = 2
+text = "ZYPHOR CHRONICLES"
+
+[node name="Button" type="Button" parent="CanvasLayer/VBoxContainer" unique_id=2029292048]
+layout_mode = 2
+text = "Host Oyun"
+
+[node name="Button2" type="Button" parent="CanvasLayer/VBoxContainer" unique_id=1542606307]
+layout_mode = 2
+text = "JOIN GAME"
+
+[node name="Button3" type="Button" parent="CanvasLayer/VBoxContainer" unique_id=685615434]
+layout_mode = 2
+text = "EXIT"
