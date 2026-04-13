@@ -46,7 +46,7 @@ func _physics_process(delta: float) -> void:
 
 func _create_zones() -> void:
 	var zones = [
-		{"name": "Vrix Pazarı", "pos": Vector2(60, 50),  "color": Color(1,0.8,0,0.3)},
+		{"name": "Vrix Pazarı", "pos": Vector2(60, 50),  "color": Color(1,0.8,0,0.3), "scene": "res://scenes/minigames/vrix_race.tscn"},
 		{"name": "Glonar Arenası", "pos": Vector2(260, 50),  "color": Color(1,0.3,0.3,0.3)},
 		{"name": "Nebula Fabrikası", "pos": Vector2(60, 130), "color": Color(0.3,0.8,1,0.3)},
 		{"name": "Xora Tapınağı", "pos": Vector2(260, 130), "color": Color(0.8,0.3,1,0.3)},
@@ -60,4 +60,5 @@ func _create_zones() -> void:
 		area.zone_name = z["name"]
 		area.zone_color = z["color"]
 		area.position = z["pos"]
+		area.minigame_scene = z.get("scene", "")
 		add_child(area)

@@ -7,33 +7,47 @@ func _ready() -> void:
 
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_CENTER)
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+	vbox.custom_minimum_size = Vector2(160, 0)
+	vbox.add_theme_constant_override("separation", 4)
 	canvas.add_child(vbox)
 
 	var title = Label.new()
 	title.name = "Title"
 	title.text = "LOBBY"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 8)
 	vbox.add_child(title)
 
 	var players_label = Label.new()
 	players_label.name = "PlayersLabel"
 	players_label.text = tr("MSG_WAITING")
+	players_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	players_label.add_theme_font_size_override("font_size", 6)
 	vbox.add_child(players_label)
 
 	# Sprite seçim butonları
 	var sprite_hbox = HBoxContainer.new()
+	sprite_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(sprite_hbox)
 	for sprite in ["Robot", "Human Male", "Human Female", "Alien"]:
 		var btn = Button.new()
 		btn.text = sprite
+		btn.custom_minimum_size = Vector2(40, 12)
+		btn.add_theme_font_size_override("font_size", 5)
 		btn.pressed.connect(_on_sprite_selected.bind(sprite.to_lower().replace(" ", "_")))
 		sprite_hbox.add_child(btn)
 
 	# Renk seçim butonları
 	var color_hbox = HBoxContainer.new()
+	color_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(color_hbox)
 	for i in range(8):
 		var btn = Button.new()
 		btn.text = str(i + 1)
+		btn.custom_minimum_size = Vector2(14, 12)
+		btn.add_theme_font_size_override("font_size", 5)
 		btn.pressed.connect(_on_color_selected.bind(i))
 		color_hbox.add_child(btn)
 
@@ -41,12 +55,16 @@ func _ready() -> void:
 	var btn_ready = Button.new()
 	btn_ready.name = "BtnReady"
 	btn_ready.text = tr("BTN_READY")
+	btn_ready.add_theme_font_size_override("font_size", 6)
+	btn_ready.custom_minimum_size = Vector2(60, 14)
 	btn_ready.pressed.connect(_on_ready_pressed)
 	vbox.add_child(btn_ready)
 
 	var btn_back = Button.new()
 	btn_back.name = "BtnBack"
 	btn_back.text = tr("BTN_BACK")
+	btn_back.add_theme_font_size_override("font_size", 6)
+	btn_back.custom_minimum_size = Vector2(60, 14)
 	btn_back.pressed.connect(_on_back_pressed)
 	vbox.add_child(btn_back)
 

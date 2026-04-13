@@ -35,11 +35,21 @@ func _ready() -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if body.name == "Player":
 		players_inside.append(body)
-		RoundManager.player_entered_zone(multiplayer.get_unique_id())
+		var my_id = 1
+		if multiplayer.has_multiplayer_peer():
+			my_id = multiplayer.get_unique_id()
+		RoundManager.player_entered_zone(my_id)
 		print(zone_name, " bölgesine girildi!")
+
+		# Doğrudan mini oyuna geç (multiplayer öncesi test için)
+		if minigame_scene != "":
+			get_tree().call_deferred("change_scene_to_file", minigame_scene)
 
 func _on_body_exited(body: Node2D) -> void:
 	if body.name == "Player":
 		players_inside.erase(body)
-		RoundManager.player_left_zone(multiplayer.get_unique_id())
+		var my_id = 1
+		if multiplayer != null and multiplayer.has_multiplayer_peer():
+			my_id = multiplayer.get_unique_id()
+		RoundManager.player_left_zone(my_id)
 		print(zone_name, " bölgesinden çıkıldı!")
