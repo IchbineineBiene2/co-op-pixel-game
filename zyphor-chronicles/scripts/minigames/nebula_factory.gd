@@ -1,4 +1,4 @@
-extends MinigameBase
+extends Node2D
 
 const BIN_COLORS  = [Color(1, 0.3, 0.3), Color(0.3, 0.5, 1), Color(0.3, 0.9, 0.3)]
 const BIN_POSITIONS = [Vector2(60, 155), Vector2(160, 155), Vector2(260, 155)]
@@ -11,9 +11,13 @@ var score_label: Label = null
 var timer_label: Label = null
 var fall_speed: float = 30.0
 var spawn_timer_node: Timer = null
+var time_left: float = 60.0
+var is_running: bool = false
+var difficulty: String = "medium"
 
 func _ready() -> void:
-	start(GameManager.get_difficulty())
+	difficulty = GameManager.get_difficulty()
+	_on_start()
 
 func _on_start() -> void:
 	var spawn_interval: float
@@ -30,6 +34,7 @@ func _on_start() -> void:
 			time_left = 60.0
 			fall_speed = 60.0
 			spawn_interval = 1.0
+	is_running = true
 	_create_scene(spawn_interval)
 
 func _create_scene(spawn_interval: float) -> void:
@@ -180,7 +185,6 @@ func _process(delta: float) -> void:
 		timer_label.text = "Time: " + str(int(max(time_left, 0)))
 	if time_left <= 0.0:
 		is_running = false
-		print("Nebula: süre bitti, _finish_game çağrılıyor")
 		_finish_game()
 
 func _finish_game() -> void:
@@ -194,4 +198,7 @@ func _finish_game() -> void:
 		medals = 1
 	PlayerData.add_zkr(zkr)
 	PlayerData.add_medals(medals)
-	get_tree().change_scene_to_file.call_deferred("res://scenes/ui/results.tscn")
+	GameManager.add_zkr(1, zkr)
+	GameManager.add_medals(1, medals)
+	GameManager.next_round()
+	get_tree().call_deferred("change_scene_to_file", "res://scenes/ui/results.tscn")

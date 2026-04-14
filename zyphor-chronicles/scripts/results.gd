@@ -1,6 +1,17 @@
 extends Node2D
 
 func _ready() -> void:
+	var my_id = 1
+	if multiplayer != null and multiplayer.has_multiplayer_peer():
+		my_id = multiplayer.get_unique_id()
+
+	if not GameManager.players.has(my_id):
+		GameManager.register_player(my_id, SaveManager.player_name)
+
+	GameManager.add_zkr(my_id, PlayerData.zkr)
+	GameManager.add_medals(my_id, PlayerData.medals)
+	GameManager.next_round()
+
 	var canvas = CanvasLayer.new()
 	add_child(canvas)
 
@@ -28,10 +39,17 @@ func _ready() -> void:
 	canvas.add_child(medals_label)
 
 	var round_label = Label.new()
-	round_label.text = "Round: " + str(GameManager.current_round + 1)
+	round_label.text = "Round: " + str(GameManager.current_round)
 	round_label.position = Vector2(110, 100)
 	round_label.add_theme_font_size_override("font_size", 10)
 	canvas.add_child(round_label)
+
+	var next_label = Label.new()
+	next_label.text = "Next: " + GameManager.get_current_minigame().replace("_", " ").to_upper()
+	next_label.position = Vector2(90, 115)
+	next_label.add_theme_font_size_override("font_size", 8)
+	next_label.modulate = Color(1, 0.8, 0.2)
+	canvas.add_child(next_label)
 
 	var continue_label = Label.new()
 	continue_label.text = "Press A to continue"

@@ -10,6 +10,15 @@ func _ready() -> void:
 	var hud = preload("res://scenes/ui/hud.tscn").instantiate()
 	add_child(hud)
 
+	# Tur başlangıcında aktif mini oyunu göster
+	var announce = Label.new()
+	announce.name = "TurAnnounce"
+	announce.text = "Bu Tur: " + GameManager.get_current_minigame().replace("_", " ").to_upper()
+	announce.position = Vector2(80, 165)
+	announce.add_theme_font_size_override("font_size", 7)
+	announce.modulate = Color(1, 0.9, 0.2)
+	add_child(announce)
+
 func _create_player() -> void:
 	player = CharacterBody2D.new()
 	player.name = "Player"
@@ -48,11 +57,12 @@ func _physics_process(delta: float) -> void:
 
 func _create_zones() -> void:
 	var zones = [
-		{"name": "Vrix Pazarı", "pos": Vector2(60, 50),  "color": Color(1,0.8,0,0.3), "scene": "res://scenes/minigames/vrix_race.tscn"},
-		{"name": "Glonar Arenası", "pos": Vector2(260, 50),  "color": Color(1,0.3,0.3,0.3), "scene": "res://scenes/minigames/glonar_fight.tscn"},
-		{"name": "Nebula Fabrikası", "pos": Vector2(60, 130), "color": Color(0.3,0.8,1,0.3), "scene": "res://scenes/minigames/nebula_factory.tscn"},
-		{"name": "Xora Tapınağı", "pos": Vector2(260, 130), "color": Color(0.8,0.3,1,0.3), "scene": "res://scenes/minigames/xora_memory.tscn"},
-		{"name": "Zyphor Tahtı", "pos": Vector2(160, 90),  "color": Color(1,0.9,0,0.5), "scene": ""},
+		{"name": "Vrix Pazarı",      "pos": Vector2(60, 50),   "color": Color(1,0.8,0,0.3),   "scene": "res://scenes/minigames/vrix_race.tscn"},
+		{"name": "Glonar Arenası",   "pos": Vector2(260, 50),  "color": Color(1,0.3,0.3,0.3), "scene": "res://scenes/minigames/glonar_fight.tscn"},
+		{"name": "Nebula Fabrikası", "pos": Vector2(60, 130),  "color": Color(0.3,0.8,1,0.3), "scene": "res://scenes/minigames/nebula_factory.tscn"},
+		{"name": "Xora Tapınağı",    "pos": Vector2(260, 130), "color": Color(0.8,0.3,1,0.3), "scene": "res://scenes/minigames/xora_memory.tscn"},
+		{"name": "Merkez Meydan",    "pos": Vector2(160, 50),  "color": Color(0.5,0.8,0.5,0.3), "scene": "res://scenes/minigames/zyphor_bomb.tscn"},
+		{"name": "Zyphor Tahtı",     "pos": Vector2(160, 130), "color": Color(1,0.9,0,0.5),   "scene": ""},
 	]
 
 	for z in zones:
