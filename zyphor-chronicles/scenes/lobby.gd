@@ -1,11 +1,14 @@
 extends Node2D
 
+var vbox: VBoxContainer = null
+var ip_input: LineEdit = null
+
 func _ready() -> void:
 	# UI'yi kod ile oluştur
 	var canvas = CanvasLayer.new()
 	add_child(canvas)
 
-	var vbox = VBoxContainer.new()
+	vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_CENTER)
 	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -51,6 +54,37 @@ func _ready() -> void:
 		btn.pressed.connect(_on_color_selected.bind(i))
 		color_hbox.add_child(btn)
 
+	var ip_label = Label.new()
+	ip_label.text = "IP Address:"
+	ip_label.add_theme_font_size_override("font_size", 6)
+	ip_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(ip_label)
+
+	ip_input = LineEdit.new()
+	ip_input.name = "IPInput"
+	ip_input.placeholder_text = "192.168.1.x"
+	ip_input.text = "127.0.0.1"
+	ip_input.custom_minimum_size = Vector2(120, 16)
+	ip_input.add_theme_font_size_override("font_size", 6)
+	ip_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(ip_input)
+
+	var btn_host = Button.new()
+	btn_host.name = "BtnHost"
+	btn_host.text = tr("BTN_HOST")
+	btn_host.custom_minimum_size = Vector2(120, 14)
+	btn_host.add_theme_font_size_override("font_size", 6)
+	btn_host.pressed.connect(_on_host_pressed)
+	vbox.add_child(btn_host)
+
+	var btn_join = Button.new()
+	btn_join.name = "BtnJoin"
+	btn_join.text = tr("BTN_JOIN")
+	btn_join.custom_minimum_size = Vector2(120, 14)
+	btn_join.add_theme_font_size_override("font_size", 6)
+	btn_join.pressed.connect(_on_join_pressed)
+	vbox.add_child(btn_join)
+
 	# Hazır ve Geri butonları
 	var btn_ready = Button.new()
 	btn_ready.name = "BtnReady"
@@ -80,17 +114,42 @@ func _on_color_selected(color_index: int) -> void:
 	PlayerData.color_palette = color_index
 	print("Renk seçildi: ", color_index)
 
+func _on_host_pressed() -> void:
+	NetworkManager.host_game()
+	GameManager.register_player(1, SaveManager.player_name)
+	_show_waiting()
+
+func _on_join_pressed() -> void:
+	var ip = "127.0.0.1"
+	if ip_input != null and ip_input.text != "":
+		ip = ip_input.text
+	NetworkManager.join_game(ip)
+	_show_waiting()
+
+func _show_waiting() -> void:
+	if vbox == null:
+		return
+	var waiting = Label.new()
+	waiting.name = "WaitingLabel"
+	waiting.text = "Waiting... (1/" + str(NetworkManager.MAX_PLAYERS) + ")"
+	waiting.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	waiting.add_theme_font_size_override("font_size", 6)
+	vbox.add_child(waiting)
+
 func _on_ready_pressed() -> void:
 	var my_id = multiplayer.get_unique_id()
 	GameManager.register_player(my_id, SaveManager.player_name)
-	print("Hazır! ID: ", my_id)
+	get_tree().change_scene_to_file("res://scenes/main_map.tscn")
 
 func _on_back_pressed() -> void:
 	NetworkManager.disconnect_game()
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func _on_player_connected(peer_id: int) -> void:
-	print("Oyuncu katıldı: ", peer_id)
+	GameManager.register_player(peer_id, "Player " + str(peer_id))
+	var waiting = vbox.find_child("WaitingLabel") if vbox else null
+	if waiting:
+		waiting.text = "Players: " + str(GameManager.players.size())
 
 func _on_player_disconnected(peer_id: int) -> void:
 	print("Oyuncu ayrıldı: ", peer_id)

@@ -1,6 +1,6 @@
 extends Node
 
-const PORT = 7777
+const PORT = 7779
 const MAX_PLAYERS = 8
 
 var peer = null
@@ -21,7 +21,8 @@ func host_game() -> void:
 	peer = ENetMultiplayerPeer.new()
 	var error = peer.create_server(PORT, MAX_PLAYERS)
 	if error != OK:
-		push_error("Host kurulamadı: " + str(error))
+		peer = null
+		push_error("Host kurulamadı, port: " + str(PORT) + " hata: " + str(error))
 		return
 	multiplayer.multiplayer_peer = peer
 	print("Host kuruldu, port: ", PORT)
@@ -32,6 +33,7 @@ func join_game(ip: String) -> void:
 	var error = peer.create_client(ip, PORT)
 	if error != OK:
 		push_error("Bağlanılamadı: " + str(error))
+		peer = null
 		return
 	multiplayer.multiplayer_peer = peer
 	print("Bağlanılıyor: ", ip)
@@ -66,4 +68,10 @@ func _on_connection_failed() -> void:
 # ── RPC: Sahne Geçişi ────────────────────────────────────────
 @rpc("authority", "call_local", "reliable")
 func change_scene_for_all(scene_path: String) -> void:
-	get_tree().change_scene_to_file(scene_path)
+	get_tree().call_deferred("change_scene_to_file", scene_path)
+
+# ── RPC: Oyuncu Verisi Sync ──────────────────────────────────
+@rpc("any_peer", "call_local", "reliable")
+func sync_player_data(peer_id: int, player_name: String) -> void:
+	GameManager.register_player(peer_id, player_name)
+	print("Oyuncu sync: ", peer_id, " - ", player_name)
