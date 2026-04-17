@@ -18,6 +18,8 @@ func _ready() -> void:
 	_create_zone_portals()
 	var hud = preload("res://scenes/ui/hud.tscn").instantiate()
 	add_child(hud)
+	RoundManager.zone_count_updated.connect(_on_zone_count_updated)
+	RoundManager.round_timer_tick.connect(_on_timer_tick)
 
 func _create_hub() -> void:
 	var ground = ColorRect.new()
@@ -162,6 +164,23 @@ func _show_transition(zone_key: String, zone_name_text: String) -> void:
 	tween.tween_callback(func():
 		get_tree().change_scene_to_file(ZONE_SCENES[zone_key])
 	)
+
+func _on_zone_count_updated(current: int, total: int) -> void:
+	if not has_node("WaitingCanvas"):
+		var canvas = CanvasLayer.new()
+		canvas.name = "WaitingCanvas"
+		add_child(canvas)
+		var lbl = Label.new()
+		lbl.name = "WaitingLabel"
+		lbl.position = Vector2(110, 8)
+		lbl.add_theme_font_size_override("font_size", 8)
+		lbl.modulate = Color(1, 1, 0)
+		canvas.add_child(lbl)
+	$WaitingCanvas/WaitingLabel.text = "Bölgede: " + str(current) + "/" + str(total)
+
+func _on_timer_tick(seconds_left: float) -> void:
+	if has_node("WaitingCanvas/WaitingLabel"):
+		$WaitingCanvas/WaitingLabel.text += "  (" + str(int(seconds_left)) + "sn)"
 
 func _physics_process(_delta: float) -> void:
 	if player == null:

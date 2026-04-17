@@ -24,6 +24,13 @@ const MINIGAMES = [
 func shuffle_minigames() -> void:
 	minigame_order = MINIGAMES.duplicate()
 	minigame_order.shuffle()
+	if multiplayer.has_multiplayer_peer() and multiplayer.is_server():
+		sync_minigame_order.rpc(minigame_order)
+
+@rpc("authority", "call_local", "reliable")
+func sync_minigame_order(order: Array) -> void:
+	minigame_order = order
+	print("Mini oyun sırası sync edildi: ", minigame_order)
 
 func get_current_minigame() -> String:
 	var idx = current_round % minigame_order.size()
@@ -38,6 +45,13 @@ func next_round() -> void:
 	current_round += 1
 	if current_round % MINIGAMES.size() == 0:
 		shuffle_minigames()
+	elif multiplayer.has_multiplayer_peer() and multiplayer.is_server():
+		sync_round.rpc(current_round)
+
+@rpc("authority", "call_local", "reliable")
+func sync_round(round_num: int) -> void:
+	current_round = round_num
+	print("Tur sync edildi: ", current_round)
 
 # ── Oyuncu Verileri ──────────────────────────────────────────
 var players: Dictionary = {}

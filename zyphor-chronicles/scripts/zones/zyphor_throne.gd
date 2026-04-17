@@ -45,7 +45,10 @@ func _create_zone() -> void:
 			await get_tree().create_timer(2.0).timeout
 			canvas.queue_free()
 			return
-		get_tree().call_deferred("change_scene_to_file", "res://scenes/minigames/zyphor_bomb.tscn")
+		var my_id = 1
+		if multiplayer.has_multiplayer_peer():
+			my_id = multiplayer.get_unique_id()
+		RoundManager.player_entered_zone(my_id, zone_name)
 	)
 	add_child(minigame_area)
 

@@ -18,6 +18,11 @@ func _ready() -> void:
 
 # ── Host ─────────────────────────────────────────────────────
 func host_game() -> void:
+	if peer:
+		peer.close()
+		peer = null
+	multiplayer.multiplayer_peer = null
+
 	peer = ENetMultiplayerPeer.new()
 	var error = peer.create_server(PORT, MAX_PLAYERS)
 	if error != OK:
@@ -56,10 +61,20 @@ func _on_peer_disconnected(id: int) -> void:
 	GameManager.players.erase(id)
 	player_disconnected.emit(id)
 
+# ── RPC: Oyun Durumu Senkronizasyonu ─────────────────────────
+@rpc("any_peer", "reliable")
+func request_game_state() -> void:
+	if not multiplayer.is_server():
+		return
+	var sender = multiplayer.get_remote_sender_id()
+	GameManager.sync_minigame_order.rpc_id(sender, GameManager.minigame_order)
+	GameManager.sync_round.rpc_id(sender, GameManager.current_round)
+
 func _on_connected_to_server() -> void:
 	var my_id = multiplayer.get_unique_id()
 	connection_succeeded.emit()
 	print("Sunucuya bağlandı, ID: ", my_id)
+	request_game_state.rpc_id(1)
 
 func _on_connection_failed() -> void:
 	connection_failed.emit()
