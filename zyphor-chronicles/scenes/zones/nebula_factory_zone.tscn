@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/zones/nebula_factory_zone.gd" id="1"]
+
+[node name="NebulaFactoryZone" type="Node2D"]
+script = ExtResource("1")
