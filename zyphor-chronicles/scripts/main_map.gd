@@ -11,14 +11,8 @@ func _ready() -> void:
 	var hud = preload("res://scenes/ui/hud.tscn").instantiate()
 	add_child(hud)
 
-	# Tur başlangıcında aktif mini oyunu göster
-	var announce = Label.new()
-	announce.name = "TurAnnounce"
-	announce.text = "Bu Tur: " + GameManager.get_current_minigame().replace("_", " ").to_upper()
-	announce.position = Vector2(80, 165)
-	announce.add_theme_font_size_override("font_size", 7)
-	announce.modulate = Color(1, 0.9, 0.2)
-	add_child(announce)
+	_create_minigame_info_ui()
+	RoundManager.zone_entered_alert.connect(_on_zone_entered_alert)
 
 	NetworkManager.player_connected.connect(_on_player_connected)
 	NetworkManager.player_disconnected.connect(_on_player_disconnected)
@@ -114,6 +108,8 @@ func _spawn_other_player(peer_id: int) -> void:
 
 	var other = CharacterBody2D.new()
 	other.name = "Player_" + str(peer_id)
+	other.collision_layer = 0
+	other.collision_mask = 0
 
 	var collision = CollisionShape2D.new()
 	var shape = CapsuleShape2D.new()
@@ -129,7 +125,7 @@ func _spawn_other_player(peer_id: int) -> void:
 	sprite.color = Color(1.0, 0.5, 0.0) if peer_id != 1 else Color(0.2, 0.6, 1.0)
 	other.add_child(sprite)
 
-	other.position = Vector2(160, 90)
+	other.position = Vector2(160, 90) + Vector2((peer_id % 5) * 20 - 40, 0)
 	add_child(other)
 	other_players[peer_id] = other
 
@@ -155,6 +151,52 @@ func _announce_join() -> void:
 func _spawn_me(peer_id: int) -> void:
 	if not other_players.has(peer_id):
 		_spawn_other_player(peer_id)
+
+func _create_minigame_info_ui() -> void:
+	var canvas = CanvasLayer.new()
+	canvas.name = "MinigameInfoCanvas"
+	add_child(canvas)
+
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.55)
+	bg.size = Vector2(200, 14)
+	bg.position = Vector2(60, 2)
+	canvas.add_child(bg)
+
+	var lbl = Label.new()
+	lbl.name = "MinigameInfoLabel"
+	lbl.add_theme_font_size_override("font_size", 7)
+	lbl.modulate = Color(1, 0.9, 0.3)
+	lbl.position = Vector2(62, 3)
+	lbl.text = "Bu Tur: " + GameManager.get_current_minigame().replace("_", " ").to_upper()
+	canvas.add_child(lbl)
+
+func _on_zone_entered_alert(peer_id: int) -> void:
+	var player_name = "Oyuncu " + str(peer_id)
+	if GameManager.players.has(peer_id):
+		player_name = GameManager.players[peer_id]["name"]
+	var minigame = GameManager.get_current_minigame().replace("_", " ").to_upper()
+
+	var canvas = CanvasLayer.new()
+	canvas.name = "AlertCanvas"
+	add_child(canvas)
+
+	var bg = ColorRect.new()
+	bg.color = Color(0.8, 0.3, 0.0, 0.85)
+	bg.size = Vector2(280, 22)
+	bg.position = Vector2(20, 75)
+	canvas.add_child(bg)
+
+	var lbl = Label.new()
+	lbl.text = "! " + player_name + " " + minigame + " bolgesine girdi!"
+	lbl.position = Vector2(22, 78)
+	lbl.add_theme_font_size_override("font_size", 7)
+	lbl.modulate = Color(1, 1, 1)
+	canvas.add_child(lbl)
+
+	var tween = create_tween()
+	tween.tween_interval(3.0)
+	tween.tween_callback(canvas.queue_free)
 
 func _create_zones() -> void:
 	var zones = [

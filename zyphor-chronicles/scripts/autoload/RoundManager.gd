@@ -13,9 +13,10 @@ signal round_started
 signal round_timer_tick(seconds_left: float)
 signal player_missed_round(peer_id: int)
 signal zone_count_updated(current: int, total: int)
+signal zone_entered_alert(peer_id: int)
 
 # ── Bölge Bekleme Sistemi ────────────────────────────────────
-func player_entered_zone(peer_id: int, _zone: String) -> void:
+func player_entered_zone(peer_id: int, _zone: String = "") -> void:
 	if not players_inside.has(peer_id):
 		players_inside.append(peer_id)
 
@@ -24,6 +25,16 @@ func player_entered_zone(peer_id: int, _zone: String) -> void:
 
 	if not timer_running:
 		_start_timer()
+
+# Tüm oyunculara zone girişini ve sayacı yayınlar
+@rpc("any_peer", "call_local", "reliable")
+func broadcast_zone_entered(peer_id: int) -> void:
+	if not players_inside.has(peer_id):
+		players_inside.append(peer_id)
+	if not timer_running:
+		_start_timer()
+	zone_count_updated.emit(players_inside.size(), GameManager.players.size())
+	zone_entered_alert.emit(peer_id)
 
 @rpc("authority", "call_local", "reliable")
 func update_zone_count(current: int, total: int) -> void:

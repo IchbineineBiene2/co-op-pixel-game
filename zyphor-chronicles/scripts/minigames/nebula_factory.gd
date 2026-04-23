@@ -4,6 +4,7 @@ const BIN_COLORS  = [Color(1, 0.3, 0.3), Color(0.3, 0.5, 1), Color(0.3, 0.9, 0.3
 const BIN_POSITIONS = [Vector2(60, 155), Vector2(160, 155), Vector2(260, 155)]
 
 var player: CharacterBody2D = null
+var other_players: Dictionary = {}
 var falling_items: Array = []
 var held_item = null
 var score: int = 0
@@ -36,6 +37,7 @@ func _on_start() -> void:
 			spawn_interval = 1.0
 	is_running = true
 	_create_scene(spawn_interval)
+	_setup_multiplayer()
 
 func _create_scene(spawn_interval: float) -> void:
 	# Arka plan
@@ -95,6 +97,73 @@ func _create_scene(spawn_interval: float) -> void:
 	var hud = preload("res://scenes/ui/hud.tscn").instantiate()
 	add_child(hud)
 
+func _setup_multiplayer() -> void:
+	if not multiplayer.has_multiplayer_peer():
+		return
+	NetworkManager.player_connected.connect(_on_mp_player_connected)
+	NetworkManager.player_disconnected.connect(_on_mp_player_disconnected)
+	var my_id = multiplayer.get_unique_id()
+	for peer_id in GameManager.players.keys():
+		if peer_id != my_id:
+			_spawn_other_player(peer_id)
+	if GameManager.players.size() > 1:
+		_announce_join.rpc()
+
+func _spawn_other_player(peer_id: int) -> void:
+	var my_id = 1
+	if multiplayer.has_multiplayer_peer():
+		my_id = multiplayer.get_unique_id()
+	if peer_id == my_id or other_players.has(peer_id):
+		return
+	var other = CharacterBody2D.new()
+	other.name = "Player_" + str(peer_id)
+	other.collision_layer = 0
+	other.collision_mask = 0
+	var col = CollisionShape2D.new()
+	var shape = CapsuleShape2D.new()
+	shape.radius = 6.0
+	shape.height = 12.0
+	col.shape = shape
+	other.add_child(col)
+	var sprite = ColorRect.new()
+	sprite.size = Vector2(12, 12)
+	sprite.position = Vector2(-6, -6)
+	sprite.color = Color(0.2, 0.6, 1.0) if peer_id == 1 else Color(1.0, 0.5, 0.0)
+	other.add_child(sprite)
+	other.position = Vector2(160, 120) + Vector2((peer_id % 5) * 20 - 40, 0)
+	add_child(other)
+	other_players[peer_id] = other
+
+func _on_mp_player_connected(peer_id: int) -> void:
+	_spawn_other_player(peer_id)
+
+func _on_mp_player_disconnected(peer_id: int) -> void:
+	if other_players.has(peer_id):
+		other_players[peer_id].queue_free()
+		other_players.erase(peer_id)
+
+@rpc("any_peer", "unreliable")
+func _sync_position(pos: Vector2) -> void:
+	if not is_inside_tree():
+		return
+	var sender_id = multiplayer.get_remote_sender_id()
+	if other_players.has(sender_id):
+		other_players[sender_id].position = pos
+
+@rpc("any_peer", "call_local")
+func _announce_join() -> void:
+	var sender_id = multiplayer.get_remote_sender_id()
+	if sender_id == 0:
+		return
+	if not other_players.has(sender_id):
+		_spawn_other_player(sender_id)
+	_spawn_me.rpc_id(sender_id, multiplayer.get_unique_id())
+
+@rpc("any_peer")
+func _spawn_me(peer_id: int) -> void:
+	if not other_players.has(peer_id):
+		_spawn_other_player(peer_id)
+
 func _on_spawn_timer() -> void:
 	if not is_running:
 		return
@@ -122,6 +191,8 @@ func _physics_process(delta: float) -> void:
 		dir = dir.normalized()
 	player.velocity = dir * 60.0
 	player.move_and_slide()
+	if multiplayer.has_multiplayer_peer():
+		_sync_position.rpc(player.position)
 
 	# Al / bırak
 	if Input.is_action_just_pressed("action_a"):

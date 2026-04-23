@@ -1,6 +1,5 @@
 extends MinigameBase
 
-var player: CharacterBody2D = null
 var npcs: Array = []
 var bomb: ColorRect = null
 var bomb_holder = null
@@ -109,6 +108,8 @@ func _physics_process(delta: float) -> void:
 		direction = direction.normalized()
 	player.velocity = direction * 70.0
 	player.move_and_slide()
+	if multiplayer.has_multiplayer_peer():
+		_sync_position.rpc(player.position)
 
 	# Bomba fırlat
 	if Input.is_action_just_pressed("action_a") and bomb_holder == player and not bomb_flying:

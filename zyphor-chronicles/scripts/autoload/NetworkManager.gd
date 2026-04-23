@@ -85,6 +85,12 @@ func _on_connection_failed() -> void:
 func change_scene_for_all(scene_path: String) -> void:
 	get_tree().call_deferred("change_scene_to_file", scene_path)
 
+@rpc("any_peer", "reliable")
+func request_scene_change(scene_path: String) -> void:
+	if not multiplayer.is_server():
+		return
+	change_scene_for_all.rpc(scene_path)
+
 # ── RPC: Oyuncu Verisi Sync ──────────────────────────────────
 @rpc("any_peer", "call_local", "reliable")
 func sync_player_data(peer_id: int, player_name: String) -> void:

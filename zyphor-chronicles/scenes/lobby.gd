@@ -119,14 +119,8 @@ func _on_color_selected(color_index: int) -> void:
 
 func _on_host_pressed() -> void:
 	NetworkManager.host_game()
-	if not multiplayer.has_multiplayer_peer():
-		_set_status("Host kurulamadı!", Color(1, 0.3, 0.3))
-		return
 	GameManager.register_player(1, SaveManager.player_name)
-	# Yerel IP'yi bul ve göster
-	var local_ip = _get_local_ip()
-	_set_status("Host: " + local_ip + "  Diğerleri bu IP'ye bağlansın", Color(0.5, 1, 0.5))
-	_update_count()
+	_show_waiting()
 
 func _on_join_pressed() -> void:
 	var ip = ip_input.text.strip_edges()
@@ -157,14 +151,24 @@ func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func _on_player_connected(peer_id: int) -> void:
-	print("Oyuncu bağlandı: ", peer_id)
-	# Sayım: gerçek peer sayısını kullan, RPC henüz gelmemiş olabilir
-	await get_tree().create_timer(0.2).timeout
-	_update_count()
+	GameManager.register_player(peer_id, "Player " + str(peer_id))
+	_show_waiting()
 
 func _on_player_disconnected(_peer_id: int) -> void:
 	await get_tree().create_timer(0.1).timeout
 	_update_count()
+
+func _show_waiting() -> void:
+	if vbox == null:
+		return
+	var waiting = vbox.find_child("WaitingLabel")
+	if waiting == null:
+		waiting = Label.new()
+		waiting.name = "WaitingLabel"
+		waiting.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		waiting.add_theme_font_size_override("font_size", 6)
+		vbox.add_child(waiting)
+	waiting.text = "Oyuncular: " + str(GameManager.players.size()) + " bağlı"
 
 func _update_count() -> void:
 	if not multiplayer.has_multiplayer_peer():

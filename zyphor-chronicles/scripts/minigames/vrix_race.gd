@@ -8,7 +8,6 @@ const PLAYER_SPEED_EASY = 60.0
 const PLAYER_SPEED_MEDIUM = 72.0
 const PLAYER_SPEED_HARD = 84.0
 
-var player: CharacterBody2D = null
 var finish_line_y: float = 20.0
 var rank: int = 1
 var timer_label: Label = null
@@ -106,6 +105,8 @@ func _physics_process(delta: float) -> void:
 
 	player.velocity = direction * speed
 	player.move_and_slide()
+	if multiplayer.has_multiplayer_peer():
+		_sync_position.rpc(player.position)
 
 	# Bitiş kontrolü
 	if player.position.y <= finish_line_y + 10:

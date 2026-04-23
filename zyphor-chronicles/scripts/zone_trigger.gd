@@ -38,7 +38,10 @@ func _on_body_entered(body: Node2D) -> void:
 		var my_id = 1
 		if multiplayer != null and multiplayer.has_multiplayer_peer():
 			my_id = multiplayer.get_unique_id()
-		RoundManager.player_entered_zone(my_id)
+		if multiplayer.has_multiplayer_peer():
+				RoundManager.broadcast_zone_entered.rpc(my_id)
+			else:
+				RoundManager.broadcast_zone_entered(my_id)
 		print(zone_name, " bölgesine girildi!")
 
 		# Zyphor Tahtı: kazanma kontrolü
@@ -109,7 +112,10 @@ func _input(event: InputEvent) -> void:
 		remove_meta("pending_scene")
 		remove_meta("dialog_node")
 		set_process_input(false)
-		get_tree().call_deferred("change_scene_to_file", scene)
+		if multiplayer.has_multiplayer_peer():
+			NetworkManager.request_scene_change.rpc_id(1, scene)
+		else:
+			get_tree().call_deferred("change_scene_to_file", scene)
 	elif event.is_action_pressed("action_b"):
 		if has_meta("dialog_node"):
 			get_meta("dialog_node").queue_free()

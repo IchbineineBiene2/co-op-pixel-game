@@ -1,6 +1,5 @@
 extends MinigameBase
 
-var player: CharacterBody2D = null
 var enemies: Array = []
 var player_hp: float = 100.0
 var max_hp: float = 100.0
@@ -132,6 +131,8 @@ func _physics_process(delta: float) -> void:
 		direction = direction.normalized()
 	player.velocity = direction * speed
 	player.move_and_slide()
+	if multiplayer.has_multiplayer_peer():
+		_sync_position.rpc(player.position)
 
 	# Saldırı
 	if Input.is_action_just_pressed("action_a"):
